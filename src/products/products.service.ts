@@ -30,7 +30,14 @@ export class ProductsService {
       this.prisma.product.count({ where }),
     ]);
 
-    return { data, meta: { total, page: skip ? Math.floor(skip / (take || 10)) + 1 : 1, lastPage: Math.ceil(total / (take || 10)) } };
+    return {
+      data,
+      meta: {
+        total,
+        page: skip ? Math.floor(skip / (take || 10)) + 1 : 1,
+        lastPage: Math.ceil(total / (take || 10)),
+      },
+    };
   }
 
   async findOne(slug: string) {

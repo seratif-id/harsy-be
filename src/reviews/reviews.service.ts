@@ -23,7 +23,9 @@ export class ReviewsService {
     });
 
     if (!orderItem) {
-      throw new BadRequestException('You can only review products you have purchased.');
+      throw new BadRequestException(
+        'You can only review products you have purchased.',
+      );
     }
 
     // Check if review already exists
@@ -36,7 +38,9 @@ export class ReviewsService {
     });
 
     if (existingReview) {
-      throw new BadRequestException('You have already reviewed this product for this order.');
+      throw new BadRequestException(
+        'You have already reviewed this product for this order.',
+      );
     }
 
     return this.prisma.review.create({

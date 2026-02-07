@@ -15,12 +15,16 @@ export class OrdersService {
       const orderItemsData = [];
 
       for (const item of items) {
-        const product = await prisma.product.findUnique({ where: { id: item.productId } });
+        const product = await prisma.product.findUnique({
+          where: { id: item.productId },
+        });
         if (!product) {
           throw new BadRequestException(`Product ${item.productId} not found`);
         }
         if (product.stock < item.quantity) {
-          throw new BadRequestException(`Insufficient stock for product ${product.name}`);
+          throw new BadRequestException(
+            `Insufficient stock for product ${product.name}`,
+          );
         }
 
         // Calculate total
@@ -48,11 +52,11 @@ export class OrdersService {
           total,
           status: 'PENDING',
           shippingAddress: shippingAddress as Prisma.InputJsonObject,
-          items: {
+          orderItems: {
             create: orderItemsData,
           },
         },
-        include: { items: true },
+        include: { orderItems: true },
       });
 
       return order;
@@ -62,13 +66,16 @@ export class OrdersService {
   async findAll(userId: string, role: string) {
     if (role === 'Admin') {
       return this.prisma.order.findMany({
-        include: { user: { select: { name: true, email: true } }, items: true },
+        include: {
+          user: { select: { name: true, email: true } },
+          orderItems: true,
+        },
         orderBy: { createdAt: 'desc' },
       });
     } else {
       return this.prisma.order.findMany({
         where: { userId },
-        include: { items: { include: { product: true } } },
+        include: { orderItems: { include: { product: true } } },
         orderBy: { createdAt: 'desc' },
       });
     }
@@ -77,7 +84,7 @@ export class OrdersService {
   async findOne(id: string, userId: string, role: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },
-      include: { items: { include: { product: true } }, user: true },
+      include: { orderItems: { include: { product: true } }, user: true },
     });
 
     if (!order) return null;
@@ -88,7 +95,8 @@ export class OrdersService {
     return order;
   }
 
-  async updateStatus(id: string, status: any) { // Status enum
+  async updateStatus(id: string, status: any) {
+    // Status enum
     return this.prisma.order.update({
       where: { id },
       data: { status },
